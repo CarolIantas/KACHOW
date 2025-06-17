@@ -1,0 +1,235 @@
+namespace Connect_4_Game;
+
+// HOW I WANT TO  DO IT HAAAAAAAAAAAAAAAAAAAAAA
+// (ABSTRACT) GAME CLASS |
+// ----------------------
+// + Start (): Void 
+// + PlayTurno (): void
+// + IsGameOver (): bool 
+// + GetWinner (): string
+// 
+// ConnectFourGame CLASS |
+// ----------------------
+//  - Board: board
+//  - Players: Player[] 
+//  - CurrentPlayer : Player
+//  - turnCounter: int
+// ----------------------
+//  + Start(): void 
+//  + PlayTurn(): void
+//  + IsGameOver(): bool
+//  + GetWinner(): string
+//  - SwitchPlayers():void
+//
+//  Board CLASS |
+// -----------------
+//  - grid: Cell[,]
+// ----------------- 
+//  + Initialize (): void
+//  + DropPiece(col,sym): bool
+//  + Display(): void
+//  + CheckWin(sym): bool 
+//  + IsFull(): bool
+//
+//  Cell CLASS |
+//--------------
+//  - symbol: char
+// ----------------
+//  + GetSymbol(): char
+//  + SetSymbol(c): void
+//
+//  (ABSTRACT) Player CLASS |  
+//-------------------------
+//  #name : string
+//  # symbol: char
+//--------------------------
+//  + GetMove(board): int
+//  + Name {get; set;}
+//  + Symbol {get; set;}
+//
+//  HumanPlayer CLASS |
+//--------------------
+//  + GetMove(board): int
+
+
+public class Board
+{
+    private const int Rows = 6;
+    private const int Columns = 7;
+    private char[,] Grid = new char[Rows, Columns];
+
+
+    // this method fills the board with space ' ' to start the game clean
+
+    public void Initialize()// this Method will call at the beginning of the game 
+    {
+        for (int row = 0; row < Rows; row++)
+        {
+            for (int col = 0; col < Columns; col++)
+            {
+                Grid[row, col] = ' '; // grid is a 2D array 
+            }
+        }
+
+    }
+
+    // this part will be the display the visual game
+
+    public void Display()
+    {
+        Console.WriteLine();
+
+        for (int row = 0; row < Rows; row++)
+        {
+            Console.Write("|");
+
+            for (int col = 0; col < Columns; col++)
+            {
+                Console.Write($" {Grid[row, col]} |");
+            }
+
+            Console.WriteLine();
+        }
+
+        Console.WriteLine(new string('-', Columns * 4 + 1));
+
+        Console.Write(" ");
+
+        for (int col = 1; col <= Columns; col++)
+
+        {
+            Console.Write($" {col} ");
+        }
+
+        Console.WriteLine("\n");
+    }
+
+    //  this method will be the drop a piece into a Column 
+
+    public bool DropPiece(int column, char symbol) // bool because need to check true or false of position 
+    {
+        column -= 1; // adjust for 0 based array 
+
+        if (column < 0 || column >= Columns)
+            
+            return false;
+
+        for (int row = Rows -1; row >= 0; row--)
+        {
+            if (Grid[row, column] == ' ')
+            {
+                Grid[row, column] = symbol;
+                
+                return true; 
+            }
+        }
+
+        return false; // column is full 
+    }
+
+    // this part will check if the board is full "tie" 
+
+    public bool IsFull()
+    {
+        for (int col = 0; col < Columns; col++)
+        {
+            if (Grid[0, col] == ' ')
+
+                return false;
+        }
+
+        return true;
+    }
+
+    //This part will check the directions 4 in row 
+
+    public bool CheckWin(char symbol)
+    {
+        // this is horizontal check
+        for (int row = 0; row < Rows; row++)
+        {
+            for (int col = 0; col <= Columns - 4; col++)
+            {
+                if (Grid[row, col] == symbol && Grid[row, col + 1] == symbol & Grid[row, col + 2] == symbol && Grid[row, col + 3] == symbol)
+                    return true;
+            }
+        }
+
+        // this is vertical check
+
+        for (int col = 0; col < Columns; col++)
+        {
+            for (int row = 0; row <= Rows - 4; row++)
+            {
+                if (Grid[row, col] == symbol && Grid[row + 1, col] == symbol & Grid[row + 2, col] == symbol && Grid[row + 3, col] == symbol)
+                    return true;
+            }
+        }
+
+        // this part is diagonal (down-right)
+
+        for (int row = 0; row <= Rows - 4; row++)
+        {
+            for (int col = 0; col <= Columns - 4; col++)
+            {
+                if (Grid[row, col] == symbol && Grid[row + 1, col + 1] == symbol & Grid[row + 2, col + 2] == symbol && Grid[row + 3, col +3] == symbol)
+                    return true;
+            }
+        }
+
+        // this is the other diagonal up-right
+
+        for (int row = 3; row < Rows; row++)
+        {
+            for (int col = 0; col <= Columns - 4; col++)
+            {
+                if (Grid[row, col] == symbol && Grid[row - 1, col + 1] == symbol & Grid[row - 2, col + 2] == symbol && Grid[row - 3, col + 3] == symbol)
+                    return true;
+
+            }
+        }
+
+        return false;
+    }
+
+}
+
+public abstract class Player
+{
+    public string Name { get; set; } 
+    public char Symbol { get; set; } // 'X' OR 'O'
+
+    public Player (string name, char symbol)
+    {
+        Name = name;
+        Symbol = symbol;
+    }
+    public abstract int GetMove(Board board); //each player type can give their own logic for choosing a column
+}
+
+public class HumanPlayer : Player
+{
+    public HumanPlayer(string name, char symbol) : base(name,symbol)
+    {
+
+    }
+
+    public override int GetMove(Board board)
+    {
+        int column;
+
+        while(true)
+        {
+            Console.Write($"{Name} ({Symbol}), choose a column (1-7): ");
+            string input = Console.ReadLine();
+
+            if (int.TryParse(input, out column) && column >= 1 && column <=7)
+            {
+                return column;
+            }
+
+            Console.WriteLine("Invalid input.Please enter a number from 1 to 7.");
+        }
+
+    }
+}
